@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tabratowski/goTest/timeout"
+	"github.com/tabratowski/gotimeout/timeout"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	for i := 0; i < 100; i++ {
 		go func(i int) {
 			defer wg.Done()
-			err := timeout.Timeout(ctx, time.Duration(rand.Intn(100)+50), func(ctx context.Context) error {
+			err := timeout.Do(ctx, time.Duration(rand.Intn(100)+50), func(ctx context.Context) error {
 				for i := 0; i < 2; i++ {
 					if ctx.Err() != nil {
 						fmt.Println("Cancelled func", ctx.Err())
