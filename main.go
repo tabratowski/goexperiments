@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tabratowski/gotimeout/timeout"
+	"github.com/tabratowski/goexperiments/timeout"
 )
 
 func main() {
