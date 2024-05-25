@@ -1,4 +1,4 @@
-module github.com/tabratowski/goTest
+module github.com/tabratowski/gotimeout
 
 go 1.22.3
 

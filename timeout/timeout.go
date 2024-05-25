@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Timeout(ctx context.Context, d time.Duration, fn func(ctx context.Context) error) error {
+func Do(ctx context.Context, d time.Duration, fn func(ctx context.Context) error) error {
 	done := make(chan struct{})
 	defer close(done)
 	var err error
