@@ -2,6 +2,8 @@ package validation
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,6 +33,8 @@ func TestMixedRulesString(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			// Arrange && Act
+			r := reflect.TypeOf(test.fieldValue)
+			fmt.Print(r.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()))
 			errs := RuleSet(Field(VString(test.fieldValue), test.fieldName).Rules(test.ruleSet...)).Validate()
 
 			// Assert

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -11,21 +10,21 @@ import (
 )
 
 func main() {
+	res := timeout.Do(1*time.Second, func() timeout.Result[int] {
+		time.Sleep(800 * time.Millisecond)
+		return timeout.Result[int]{Value: 1}
+	})
+	fmt.Println(res)
 	wg := &sync.WaitGroup{}
 	wg.Add(100)
-	ctx := context.Background()
 	for i := 0; i < 100; i++ {
 		go func(i int) {
 			defer wg.Done()
-			err := timeout.Do(ctx, time.Duration(rand.Intn(100)+50), func(ctx context.Context) error {
-				for i := 0; i < 2; i++ {
-					if ctx.Err() != nil {
-						fmt.Println("Cancelled func", ctx.Err())
-						return fmt.Errorf("cancelled from fn")
-					}
-					time.Sleep(time.Duration(rand.Intn(60) + 25))
+			err := timeout.Do(time.Duration(rand.Intn(100)+50)*time.Millisecond, func() timeout.Result[int] {
+				for i := 0; i < 1; i++ {
+					time.Sleep(time.Duration(rand.Intn(100)+25) * time.Millisecond)
 				}
-				return nil
+				return timeout.Result[int]{Value: 4}
 			})
 			fmt.Println(err)
 		}(i)

@@ -1,34 +1,40 @@
 package timeout
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"sync"
 	"time"
 )
 
-func Do(ctx context.Context, d time.Duration, fn func(ctx context.Context) error) error {
-	done := make(chan struct{})
-	defer close(done)
-	var err error
-	mu := &sync.Mutex{}
-	ctx, cancel := context.WithTimeout(ctx, d)
-	defer cancel()
+type Result[T any] struct {
+	Value T
+	Err   error
+}
+
+func Do[T any](d time.Duration, fn func() Result[T]) Result[T] {
+	resultCh := make(chan Result[T], 1)
+	var chClosed bool
+	mu := sync.Mutex{}
+	defer func() {
+		mu.Lock()
+		defer mu.Unlock()
+		chClosed = true
+		close(resultCh)
+	}()
 	go func() {
 		mu.Lock()
-		err = fn(ctx)
 		defer mu.Unlock()
-		if ctx.Err() != nil {
-			return
+		res := fn()
+		if !chClosed {
+			resultCh <- res
 		}
-		done <- struct{}{}
 	}()
 	select {
-	case <-ctx.Done():
-		return errors.New("context has been cancelled")
-	case <-done:
-		fmt.Println("done")
-		return err
+	case <-time.After(d):
+		return Result[T]{Err: errors.New("chClosed occurred")}
+	case res := <-resultCh:
+		fmt.Println("resultCh")
+		return res
 	}
 }
