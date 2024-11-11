@@ -2,8 +2,6 @@ package validation
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,18 +11,18 @@ func TestMixedRulesString(t *testing.T) {
 	for _, test := range []struct {
 		name           string
 		fieldName      string
-		fieldValue     string
+		testStruct     testStruct
 		expectedErrors []error
 		ruleSet        []RuleFn[hasLength]
 	}{
 		{
 			name:       "Required, minLength 10 maxLength 20",
-			fieldValue: "some name 2",
+			testStruct: testStruct{name: "some name 2", surname: "surname 45"},
 			ruleSet:    []RuleFn[hasLength]{Required[hasLength], MinLength(10), MaxLength(20)},
 		},
 		{
 			name:           "Required, minLength 10 maxLength 20 - expected min length error",
-			fieldValue:     "some name",
+			testStruct:     testStruct{name: "some name", surname: "some surname"},
 			fieldName:      "NAME",
 			ruleSet:        []RuleFn[hasLength]{Required[hasLength], MinLength(10), MaxLength(20)},
 			expectedErrors: []error{errors.New("value NAME length must be greater or equal than 10")},
@@ -33,9 +31,10 @@ func TestMixedRulesString(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			// Arrange && Act
-			r := reflect.TypeOf(test.fieldValue)
-			fmt.Print(r.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()))
-			errs := RuleSet(Field(VString(test.fieldValue), test.fieldName).Rules(test.ruleSet...)).Validate()
+			errs := RuleSet(
+				Field(VString(test.testStruct.name), test.fieldName).Rules(test.ruleSet...),
+				Field(VString(test.testStruct.surname), test.fieldName).Rules(test.ruleSet...),
+			).Validate()
 
 			// Assert
 			assert.Equal(t, test.expectedErrors, errs)

@@ -32,7 +32,7 @@ func Do[T any](d time.Duration, fn func() Result[T]) Result[T] {
 	}()
 	select {
 	case <-time.After(d):
-		return Result[T]{Err: errors.New("chClosed occurred")}
+		return Result[T]{Err: errors.New("timeout occurred")}
 	case res := <-resultCh:
 		fmt.Println("resultCh")
 		return res
